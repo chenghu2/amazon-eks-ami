@@ -2,7 +2,7 @@
   "_comment": "All template variables are enumerated here; and most variables have a default value defined in eks-worker-al2-variables.json",
   "variables": {
     "additional_yum_repos": null,
-    "ami_component_description": null,    
+    "ami_component_description": null,
     "ami_description": null,
     "ami_name": null,
     "ami_regions": null,
@@ -15,7 +15,7 @@
     "aws_session_token": null,
     "binary_bucket_name": null,
     "binary_bucket_region": null,
-    "cache_container_images": null,    
+    "cache_container_images": null,
     "cni_plugin_version": null,
     "containerd_version": null,
     "creator": null,
@@ -27,7 +27,7 @@
     "kubernetes_build_date": null,
     "kubernetes_version": null,
     "launch_block_device_mappings_volume_size": null,
-    "pause_container_version": null,    
+    "pause_container_version": null,
     "pull_cni_from_github": null,
     "remote_folder": null,
     "runc_version": null,
@@ -41,7 +41,8 @@
     "subnet_id": null,
     "temporary_security_group_source_cidrs": null,
     "volume_type": null,
-    "working_dir": null
+    "working_dir": null,
+    "enable_fips_mode": null
   },
   "builders": [
     {
@@ -106,7 +107,8 @@
         "docker_version": "{{ user `docker_version`}}",
         "containerd_version": "{{ user `containerd_version`}}",
         "kubernetes": "{{ user `kubernetes_version`}}/{{ user `kubernetes_build_date` }}/bin/linux/{{ user `arch` }}",
-        "cni_plugin_version": "{{ user `cni_plugin_version`}}"
+        "cni_plugin_version": "{{ user `cni_plugin_version`}}",
+        "fips_enabled": "{{ user `enable_fips_mode`}}"
       },
       "ami_name": "{{user `ami_name`}}",
       "ami_description": "{{ user `ami_description` }}, {{ user `ami_component_description` }}"
@@ -148,13 +150,29 @@
     {
       "type": "shell",
       "remote_folder": "{{ user `remote_folder`}}",
-      "expect_disconnect": true,
       "pause_after": "90s",
       "script": "{{template_dir}}/scripts/upgrade_kernel.sh",
       "environment_vars": [
         "KUBERNETES_VERSION={{user `kubernetes_version`}}",
         "KERNEL_VERSION={{user `kernel_version`}}"
       ]
+    },
+    {
+      "type": "shell",
+      "pause_before": "90s",
+      "remote_folder": "{{ user `remote_folder`}}",
+      "script": "{{template_dir}}/scripts/enable_fips.sh",
+      "environment_vars": [
+        "ENABLE_FIPS_MODE={{user `enable_fips_mode`}}"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo reboot"
+      ],
+      "expect_disconnect": true,
+      "pause_after": "90s"
     },
     {
       "type": "shell",
@@ -176,7 +194,8 @@
         "SONOBUOY_E2E_REGISTRY={{user `sonobuoy_e2e_registry`}}",
         "PAUSE_CONTAINER_VERSION={{user `pause_container_version`}}",
         "CACHE_CONTAINER_IMAGES={{user `cache_container_images`}}",
-        "WORKING_DIR={{user `working_dir`}}"
+        "WORKING_DIR={{user `working_dir`}}",
+        "ENABLE_FIPS_MODE={{user `enable_fips_mode`}}"
       ]
     },
     {

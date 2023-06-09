@@ -5,8 +5,9 @@ set -euo pipefail
 
 region=$1
 aws_domain=$2
-if [[ $# -eq 3 ]] && [[ ! -z $3 ]]; then
-  acct=$3
+FIPS_ENABLED=$3
+if [[ $# -eq 4 ]] && [[ ! -z $4 ]]; then
+  acct=$4
 else
   case "${region}" in
     ap-east-1)
@@ -69,4 +70,4 @@ else
   esac
 fi
 
-echo "${acct}.dkr.ecr.${region}.${aws_domain}"
+echo "${acct}.dkr.ecr$([ "$FIPS_ENABLED" = true ] && echo -fips).${region}.${aws_domain}"

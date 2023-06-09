@@ -34,5 +34,6 @@
     "subnet_id": "",
     "temporary_security_group_source_cidrs": "",
     "volume_type": "gp2",
-    "working_dir": "{{user `remote_folder`}}/worker"
+    "working_dir": "{{user `remote_folder`}}/worker",
+    "enable_fips_mode": "false"
 }

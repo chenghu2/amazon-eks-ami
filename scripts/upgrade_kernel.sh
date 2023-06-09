@@ -23,5 +23,3 @@ fi
 sudo grubby \
   --update-kernel=ALL \
   --args="psi=1"
-
-sudo reboot

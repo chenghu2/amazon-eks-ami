@@ -325,7 +325,13 @@ if [ "$MOUNT_BPF_FS" = "true" ]; then
   mount-bpf-fs
 fi
 
-ECR_URI=$(/etc/eks/get-ecr-uri.sh "${AWS_DEFAULT_REGION}" "${AWS_SERVICES_DOMAIN}" "${PAUSE_CONTAINER_ACCOUNT:-}")
+FIPS_ENABLED=false
+# If FIPS is enabled on the machine, use the FIPS endpoint for AWS ECR.
+if grep "fips=1" /etc/default/grub; then
+  FIPS_ENABLED=true
+fi
+
+ECR_URI=$(/etc/eks/get-ecr-uri.sh "${AWS_DEFAULT_REGION}" "${AWS_SERVICES_DOMAIN}" "${FIPS_ENABLED}" "${PAUSE_CONTAINER_ACCOUNT:-}")
 PAUSE_CONTAINER_IMAGE=${PAUSE_CONTAINER_IMAGE:-$ECR_URI/eks/pause}
 PAUSE_CONTAINER="$PAUSE_CONTAINER_IMAGE:$PAUSE_CONTAINER_VERSION"
 
